@@ -1,24 +1,46 @@
 
 openapi: 3.0.3
 info:
-  title: Example API
-  description: Simple API with a ping endpoint for testing Stoplight Elements
+  title: Messaging API
+  description: Example API with a message sending endpoint that demonstrates code snippets in multiple languages.
   version: 1.0.0
 servers:
   - url: https://api.example.com
 paths:
-  /ping:
-    get:
-      summary: Ping the server
-      description: Returns a simple pong message to verify the API is alive.
+  /send-message:
+    post:
+      summary: Send a message
+      operationId: sendMessage
+      description: Sends a text message to a given phone number.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - to
+                - message
+              properties:
+                to:
+                  type: string
+                  example: "+123456789"
+                  description: The recipient's phone number in E.164 format
+                message:
+                  type: string
+                  example: "Hello world!"
+                  description: The text content of the message
       responses:
         '200':
-          description: Pong response
+          description: Message sent successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
+                  message_id:
                     type: string
-                    example: pong
+                    example: "abc-123"
+                  status:
+                    type: string
+                    example: "sent"
