@@ -2,14 +2,47 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Example API Docs</title>
+    <title>ExampleCorp API Docs</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script type="module" src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen;
+        margin: 0;
+        background: #f8f9fa;
+      }
+      header {
+        background-color: #0d6efd;
+        color: white;
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+      }
+      header img {
+        height: 40px;
+      }
+      main {
+        padding: 1rem;
+      }
+    </style>
   </head>
   <body>
-    <elements-api
-      apiDescriptionUrl="openapi.yaml"
-      router="hash"
-    />
+    <header>
+      <h1>Fazi API public documentation</h1>
+      <img src="https://fazicompany.com/wp-content/uploads/2024/10/FAZI-logo-full-color.png" alt="Company Logo">
+    </header>
+    <main>
+      <elements-api
+        apiDescriptionUrl="openapi.yaml"
+        router="hash"
+      />
+    </main>
   </body>
 </html>
