@@ -1,46 +1,254 @@
-
-openapi: 3.0.3
+openapi: 3.0.0
 info:
-  title: Messaging API
-  description: Example API with a message sending endpoint that demonstrates code snippets in multiple languages.
+  title: Fazi Integration API
   version: 1.0.0
+  description: >
+    This API contains a single endpoint that allows external partners to request a dynamically generated URL for launching a game session. All parameters are passed via URL-encoded query string values.
+
+tags:
+  - name: Game Launch
+    description: Endpoints related to launching games
+
 servers:
-  - url: https://api.example.com
+  - url:  https://integration.fazi.rs
+
 paths:
-  /send-message:
-    post:
-      summary: Send a message
-      operationId: sendMessage
-      description: Sends a text message to a given phone number.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - to
-                - message
-              properties:
-                to:
-                  type: string
-                  example: "+123456789"
-                  description: The recipient's phone number in E.164 format
-                message:
-                  type: string
-                  example: "Hello world!"
-                  description: The text content of the message
+  /api/v1/DynamicLaunchURL:
+    get:
+      tags:
+        - Game Launch
+      summary: Generates a dynamic game launch URL
+      description: >
+        Accepts a list of query parameters and returns a dynamic URL that can be used 
+        to launch a game. All parameters must be URL-encoded.
+      parameters:
+        - name: portalCode
+          in: query
+          description: Unique code identifying portal (FAZI provided).
+          required: true
+          schema:
+            type: string
+        - name: token
+          in: query
+          description: One time session token unique for player, used only for authentication.
+          required: true
+          schema:
+            type: string
+        - name: gameName
+          in: query
+          description: Name of the game to be launched.
+          required: true
+          schema:
+            type: string
+        - name: currency
+          in: query
+          description: Currency ISO code.
+          required: true
+          schema:
+            type: string
+        - name: playerID
+          in: query
+          description: Unique code identifier of the player.
+          required: false
+          schema:
+            type: string
+        - name: moneyType
+          in: query
+          description: 0 if player chooses to play for free and 1 if player plays for real money.
+          required: false
+          schema:
+            type: integer
+        - name: lobbyUrl
+          in: query
+          description: URL where the player is redirected after closing the game.
+          required: false
+          schema:
+            type: string
+            format: uri
+        - name: languageCode
+          in: query
+          description: Language ISO code .
+          required: false
+          schema:
+            type: string
+        - name: roomID
+          in: query
+          description: Unique identifier of the room.
+          required: false
+          schema:
+            type: string
+        - name: countryCode
+          in: query
+          description: Country ISO3 code where the game is running.
+          required: false
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 3
+        - name: platform
+          in: query
+          description: The value can be \"desktop\" or \"mobile\", it depends where the game is launched.
+          required: false
+          schema:
+            type: string
+        - name: isFullscreenEnabled
+          in: query
+          description: This parameter overrides the default setting for the full-screen mode.
+          required: false
+          schema:
+            type: string
+
       responses:
         '200':
-          description: Message sent successfully
+          description: Dynamic URL successfully generated
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message_id:
+                  launchUrl:
                     type: string
-                    example: "abc-123"
+                    format: uri
+                    example: https://gameserver-store-ms.fazi.rs/Home/IntegrationGameLaunch/omegamozzartbetrsd?moneyType=0&currency=RSD&gameName=WildHot40&languageCode=eng&platform=desktop&CountryCode=TUR
+                  headers:
+                    type: object
                   status:
+                    type: object
+                    properties:
+                      code:
+                        type: integer
+                        example: 1000
+                      description:
+                        type: string
+                        example: Transaction successful.
+                  correlationId:
                     type: string
-                    example: "sent"
+                    format: uuid
+                    example: 5915d539-6107-48bb-954d-6cb049f8e662
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: 2025-06-20T13:38:55.623+00:00
+
+        '400':
+          description: Bad request – required parameters are missing or invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    properties:
+                      code:
+                        type: integer
+                        example: 1001
+                      description:
+                        type: string
+                        example: One or more request parameters have invalid type.
+                  correlationId:
+                    type: string
+                    format: uuid
+                    example: 5915d539-6107-48bb-954d-6cb049f8e662
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: 2025-06-20T13:38:55.623+00:00
+              examples:
+                invalidType:
+                  summary: Parameter has invalid type
+                  value:
+                    status:
+                      code: 1001
+                      description: One or more request parameters have invalid type.
+                    correlationId: 5915d539-6107-48bb-954d-6cb049f8e662
+                    timestamp: 2025-06-20T13:38:55.623+00:00
+                missingParameter:
+                  summary: Required parameter is missing
+                  value:
+                    status:
+                      code: 1002
+                      description: One or more required parameters are missing.
+                    correlationId: d74e213a-28a2-4f55-a65e-1e7d4a7c5a11
+                    timestamp: 2025-06-25T08:19:01.123+00:00
+                invalidPortalCode:
+                  summary: Unrecognized portal code provided
+                  value:
+                    status:
+                      code: 1010
+                      description: The provided portalCode is not valid or not registered.
+                    correlationId: a12b34cd-5ef6-7890-abcd-112233445566
+                    timestamp: 2025-06-25T09:41:18.777+00:00
+                invalidCurrency:
+                  summary: Invalid Currency
+                  value:
+                    status:
+                      code: 8004
+                      description: The specified currency is not valid.
+                    correlationId: a12b34cd-5ef6-7890-abcd-112233445566
+                    timestamp: 2025-06-25T09:41:18.777+00:00
+                invalidGameName:
+                  summary: The game name is invalid or not available
+                  value:
+                    status:
+                      code: 8005
+                      description: The specified gameName does not exist or is not available for this partner.
+                    correlationId: b1c2d3e4-5678-90ff-abcd-334455667788
+                    timestamp: 2025-06-25T09:42:10.901+00:00
+
+        '401':
+          description: Unauthorized – invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    properties:
+                      code:
+                        type: integer
+                        example: 3001
+                      description:
+                        type: string
+                        example: The client is not authorized for this action, please check your credentials.
+                  correlationId:
+                    type: string
+                    format: uuid
+                    example: 5915d539-6107-48bb-954d-6cb049f8e662
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: 2025-06-20T13:38:55.623+00:00
+
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    properties:
+                      code:
+                        type: integer
+                        example: 3000
+                      description:
+                        type: string
+                        example: General server error. Please try later or contact Fazi support.
+                  correlationId:
+                    type: string
+                    format: uuid
+                    example: 5915d539-6107-48bb-954d-6cb049f8e662
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: 2025-06-20T13:38:55.623+00:00
+
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
