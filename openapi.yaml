@@ -1,0 +1,24 @@
+
+openapi: 3.0.3
+info:
+  title: Example API
+  description: Simple API with a ping endpoint for testing Stoplight Elements
+  version: 1.0.0
+servers:
+  - url: https://api.example.com
+paths:
+  /ping:
+    get:
+      summary: Ping the server
+      description: Returns a simple pong message to verify the API is alive.
+      responses:
+        '200':
+          description: Pong response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: pong
